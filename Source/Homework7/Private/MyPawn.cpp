@@ -25,6 +25,13 @@ AMyPawn::AMyPawn()
 
 	MyMovement = CreateDefaultSubobject<UMyCharacterMovement>(TEXT("MyMovement"));
 	MyMovement->SetActorCollisionComponent(Collision);
+
+	bRotateCameraOnly = false;
+	SavedCameraRotator = FRotator::ZeroRotator;
+
+	RunSpeed = 450;
+	SprintSpeed = RunSpeed * 1.65;
+	MyMovement->MaxMoveSpeed = RunSpeed;
 }
 
 void AMyPawn::BeginPlay()
@@ -58,6 +65,14 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 			{
 				EnhancedInput->BindAction(PC->LookAction, ETriggerEvent::Triggered, this, &AMyPawn::Look);
 			}
+			if (PC->SprintAction)
+			{
+				EnhancedInput->BindAction(PC->SprintAction, ETriggerEvent::Triggered, this, &AMyPawn::ToggleSprint);
+			}
+			if (PC->CameraToggleAction)
+			{
+				EnhancedInput->BindAction(PC->CameraToggleAction, ETriggerEvent::Triggered, this, &AMyPawn::ToggleCamera);
+			}
 		}
 	}
 }
@@ -84,12 +99,23 @@ void AMyPawn::Stop(const FInputActionValue& Value)
 void AMyPawn::Look(const FInputActionValue& Value)
 {
 	FVector2D LookInput = Value.Get<FVector2D>();
-	AddActorLocalRotation(FRotator(0, LookInput.X, 0));
 
-	if (SpringArm)
+	if (bRotateCameraOnly)
 	{
-		SpringArm->AddLocalRotation(FRotator(LookInput.Y, 0, 0));
+		double Yaw = SpringArm->GetComponentRotation().Yaw + LookInput.X;
+		double Pitch = SpringArm->GetComponentRotation().Pitch + LookInput.Y;
+		SpringArm->SetWorldRotation(FRotator(Pitch, Yaw, 0));
 	}
+	else
+	{
+		AddActorLocalRotation(FRotator(0, LookInput.X, 0));
+		if (SpringArm)
+		{
+			SpringArm->AddLocalRotation(FRotator(LookInput.Y, 0, 0));
+		}
+	}
+
+	
 }
 
 void AMyPawn::Jump(const FInputActionValue& Value)
@@ -97,6 +123,38 @@ void AMyPawn::Jump(const FInputActionValue& Value)
 	if (MyMovement)
 	{
 		MyMovement->Jump();
+	}
+}
+
+void AMyPawn::ToggleSprint(const FInputActionValue& Value)
+{
+	if (MyMovement)
+	{
+		if (Value.Get<bool>())
+		{
+			MyMovement->MaxMoveSpeed = SprintSpeed;
+		}
+		else
+		{
+			MyMovement->MaxMoveSpeed = RunSpeed;
+		}
+	}
+}
+
+void AMyPawn::ToggleCamera(const FInputActionValue& Value)
+{
+	if (Value.Get<bool>())
+	{
+		bRotateCameraOnly = true;
+		if (SpringArm)
+		{
+			SavedCameraRotator = SpringArm->GetRelativeRotation();
+		}
+	}
+	else
+	{
+		bRotateCameraOnly = false;
+		SpringArm->SetRelativeRotation(SavedCameraRotator);
 	}
 }
 

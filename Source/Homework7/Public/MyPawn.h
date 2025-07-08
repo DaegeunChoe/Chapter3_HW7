@@ -22,17 +22,23 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Move(const FInputActionValue& Value);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Stop(const FInputActionValue& Value);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Look(const FInputActionValue& Value);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Jump(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleSprint(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleCamera(const FInputActionValue& Value);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCapsuleComponent> Collision;
@@ -49,6 +55,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMyCharacterMovement> MyMovement;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double RunSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double SprintSpeed;
+
 protected:
 	virtual void BeginPlay() override;
+
+	bool bRotateCameraOnly;
+	FRotator SavedCameraRotator;
 };
