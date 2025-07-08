@@ -54,6 +54,10 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 				EnhancedInput->BindAction(PC->MoveAction, ETriggerEvent::Triggered, this, &AMyPawn::Move);
 				EnhancedInput->BindAction(PC->MoveAction, ETriggerEvent::Completed, this, &AMyPawn::Stop);
 			}
+			if (PC->LookAction)
+			{
+				EnhancedInput->BindAction(PC->LookAction, ETriggerEvent::Triggered, this, &AMyPawn::Look);
+			}
 		}
 	}
 }
@@ -79,6 +83,13 @@ void AMyPawn::Stop(const FInputActionValue& Value)
 
 void AMyPawn::Look(const FInputActionValue& Value)
 {
+	FVector2D LookInput = Value.Get<FVector2D>();
+	AddActorLocalRotation(FRotator(0, LookInput.X, 0));
+
+	if (SpringArm)
+	{
+		SpringArm->AddLocalRotation(FRotator(LookInput.Y, 0, 0));
+	}
 }
 
 void AMyPawn::Jump(const FInputActionValue& Value)
