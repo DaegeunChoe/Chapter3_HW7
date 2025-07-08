@@ -8,6 +8,7 @@ class UCapsuleComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UMyCharacterMovement;
 
 UCLASS()
 class HOMEWORK7_API AMyPawn : public APawn
@@ -30,6 +31,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UMyCharacterMovement> MyMovement;
 
 protected:
 	virtual void BeginPlay() override;

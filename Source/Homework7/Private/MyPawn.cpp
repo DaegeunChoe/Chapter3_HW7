@@ -3,6 +3,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "MyCharacterMovement.h"
 
 AMyPawn::AMyPawn()
 {
@@ -19,6 +20,9 @@ AMyPawn::AMyPawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	MyMovement = CreateDefaultSubobject<UMyCharacterMovement>(TEXT("MyMovement"));
+	MyMovement->SetActorCollisionComponent(Collision);
 }
 
 void AMyPawn::BeginPlay()
