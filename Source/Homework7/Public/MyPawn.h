@@ -64,6 +64,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+private:
+	// 카메라 회전 제어 변수
 	bool bRotateCameraOnly;
 	FRotator SavedCameraRotator;
+	double DestYaw;
+	double DestPitch;
+	bool bIsEaseTransition;
+	FTimerHandle TransitionTimer;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraTransitionAlpha;
 };

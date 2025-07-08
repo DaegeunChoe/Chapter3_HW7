@@ -27,7 +27,10 @@ AMyPawn::AMyPawn()
 	MyMovement->SetActorCollisionComponent(Collision);
 
 	bRotateCameraOnly = false;
+	DestYaw = DestPitch = 0;
 	SavedCameraRotator = FRotator::ZeroRotator;
+	bIsEaseTransition = false;
+	CameraTransitionAlpha = 0.5;
 
 	RunSpeed = 450;
 	SprintSpeed = RunSpeed * 1.65;
@@ -37,11 +40,29 @@ AMyPawn::AMyPawn()
 void AMyPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	DestYaw = SpringArm->GetComponentRotation().Yaw;
+	DestPitch = SpringArm->GetComponentRotation().Pitch;
 }
 
 void AMyPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsEaseTransition)
+	{
+		FRotator A = SpringArm->GetRelativeRotation();
+		FRotator B = FRotator(DestPitch, DestYaw, 0);
+		FRotator Interp = A * (1 - CameraTransitionAlpha) + B * CameraTransitionAlpha;
+		if ((FMath::Abs(A.Pitch - B.Pitch) + FMath::Abs(A.Yaw - B.Yaw)) <= 5)
+		{
+			SpringArm->SetRelativeRotation(B);
+			bIsEaseTransition = false;
+		}
+		else
+		{
+			SpringArm->SetRelativeRotation(Interp);
+		}
+	}
 }
 
 void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -99,23 +120,27 @@ void AMyPawn::Stop(const FInputActionValue& Value)
 void AMyPawn::Look(const FInputActionValue& Value)
 {
 	FVector2D LookInput = Value.Get<FVector2D>();
-
 	if (bRotateCameraOnly)
 	{
-		double Yaw = SpringArm->GetComponentRotation().Yaw + LookInput.X;
-		double Pitch = SpringArm->GetComponentRotation().Pitch + LookInput.Y;
-		SpringArm->SetWorldRotation(FRotator(Pitch, Yaw, 0));
+		if (SpringArm)
+		{
+			DestYaw += LookInput.X;
+			DestPitch += LookInput.Y;
+		}
 	}
 	else
 	{
 		AddActorLocalRotation(FRotator(0, LookInput.X, 0));
 		if (SpringArm)
 		{
-			SpringArm->AddLocalRotation(FRotator(LookInput.Y, 0, 0));
+			DestPitch += LookInput.Y;
 		}
 	}
 
-	
+	if (!bIsEaseTransition)
+	{
+		SpringArm->SetRelativeRotation(FRotator(DestPitch, DestYaw, 0));
+	}
 }
 
 void AMyPawn::Jump(const FInputActionValue& Value)
@@ -154,7 +179,13 @@ void AMyPawn::ToggleCamera(const FInputActionValue& Value)
 	else
 	{
 		bRotateCameraOnly = false;
-		SpringArm->SetRelativeRotation(SavedCameraRotator);
+		bIsEaseTransition = true;
+		DestYaw = SavedCameraRotator.Yaw;
+		DestPitch = SavedCameraRotator.Pitch;
+		if (TransitionTimer.IsValid())
+		{
+			GetWorldTimerManager().ClearTimer(TransitionTimer);
+		}
+		GetWorldTimerManager().SetTimer(TransitionTimer, [this]() {bIsEaseTransition = false;}, 1, false);
 	}
 }
-
