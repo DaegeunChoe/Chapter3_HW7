@@ -8,18 +8,22 @@ UMyCharacterMovement::UMyCharacterMovement()
 
 	MaxJumpCount = 1;
 	RemainJumpCount = MaxJumpCount;
+
+	InputForce = FVector::ZeroVector;
+	AirControl = 0.5;
 }
 
-void UMyCharacterMovement::PostProcess()
+void UMyCharacterMovement::CalculateForce(float DeltaTime)
 {
-	// 내 힘으로 뛰고 있을 때, 최고 속도를 제한함
-	if (IsLanded() && !FMath::IsNearlyZero(InputForce.Length()))
+	// 기본 힘 계산
+	Super::CalculateForce(DeltaTime);
+
+	// 최고 속도보다 느릴 경우, 입력에 의해 이동할 수 있음
+	double SpeedXY = FMath::Sqrt(Velocity.X * Velocity.X + Velocity.Y * Velocity.Y);
+	if (SpeedXY <= MaxMoveSpeed && !FMath::IsNearlyZero(InputForce.Length()))
 	{
-		if (Velocity.Length() > MaxMoveSpeed)
-		{
-			Velocity.Normalize();
-			Velocity *= MaxMoveSpeed;
-		}
+		// 입력에 의한 힘 추가 계산
+		NetForce += InputForce * (IsLanded() ? 1.0 : AirControl);
 	}
 }
 
@@ -27,7 +31,6 @@ void UMyCharacterMovement::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	bool BeforeLanded = IsLanded();
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	bool AfterLanded = IsLanded();
 	if (!BeforeLanded && AfterLanded)
 	{
@@ -58,4 +61,9 @@ void UMyCharacterMovement::Stop()
 void UMyCharacterMovement::OnLanded()
 {
 	RemainJumpCount = MaxJumpCount;
+}
+
+void UMyCharacterMovement::SetInputForce(FVector NewForce)
+{
+	InputForce = NewForce;
 }

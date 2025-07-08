@@ -31,13 +31,6 @@ public:
 	void SetAdditionalForce(FVector NewForce);
 
 	/// <summary>
-	/// 입력에 의한 힘을 지정한다.
-	/// </summary>
-	/// <param name="NewForce">외부 힘</param>
-	UFUNCTION(BlueprintCallable)
-	void SetInputForce(FVector NewForce);
-
-	/// <summary>
 	/// 짧은 시간 힘을 가한다.
 	/// </summary>
 	/// <param name="NewForce">외부 힘</param>
@@ -60,7 +53,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void PostProcess();
+	virtual void CalculateForce(float DeltaTime);
 
 	TObjectPtr<UShapeComponent> ActorCollisionComp;
 
@@ -75,12 +68,6 @@ protected:
 	/// </summary>
 	UPROPERTY(BlueprintReadOnly, Category = "Physics|Base")
 	FVector AdditionalForce;
-
-	/// <summary>
-	/// 사용자 입력에 의해 발생한 힘. N = kg * m / s^2
-	/// </summary>
-	UPROPERTY(BlueprintReadOnly, Category = "Physics|Base")
-	FVector InputForce;
 
 	/// <summary>
 	/// 현재 가속도. m/s^2

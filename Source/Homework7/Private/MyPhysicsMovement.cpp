@@ -14,7 +14,6 @@ UMyPhysicsMovement::UMyPhysicsMovement()
 	Mass = 1;
 
 	AdditionalForce = FVector::ZeroVector;
-	InputForce = FVector::ZeroVector;
 	
 	AirDragCoefficient = 0.7;
 	AirDensity = 1.225;
@@ -43,12 +42,11 @@ void UMyPhysicsMovement::BeginPlay()
 	}
 }
 
-void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UMyPhysicsMovement::CalculateForce(float DeltaTime)
 {
-	UE_LOG(LogTemp, Display, TEXT("Velocity Before(%.2f, %.2f, %.2f)"), Velocity.X, Velocity.Y, Velocity.Z);
 	// 기본 힘
-	NetForce = InputForce + AdditionalForce + GetGravityForce();
-	
+	NetForce = AdditionalForce + GetGravityForce();
+
 	// 다른 물체에 의한 항력
 	bool bIsHit = false;
 	bIsLanding = false;
@@ -73,6 +71,11 @@ void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		TotalDragForce += GetFrictionForce(NormalForce);
 	}
 	NetForce += TotalDragForce;
+}
+
+void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	CalculateForce(DeltaTime);
 
 	Acceleration = NetForce / Mass;
 	if (Acceleration.Length() < AccelerationThreshold)
@@ -80,24 +83,17 @@ void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		Acceleration *= 0;
 	}
 
-	
 	Velocity += Acceleration * DeltaTime;
-	UE_LOG(LogTemp, Display, TEXT("Velocity After(%.2f, %.2f, %.2f)"), Velocity.X, Velocity.Y, Velocity.Z);
 	if (Velocity.Length() < VelocityThreshold)
 	{
 		Velocity *= 0;
 	}
 
-	PostProcess();
 	FVector Displacement = Velocity * DeltaTime;
 	if (AActor* Actor = GetOwner())
 	{
 		Actor->AddActorWorldOffset(Displacement);
 	}
-}
-
-void UMyPhysicsMovement::PostProcess()
-{
 }
 
 void UMyPhysicsMovement::SetActorCollisionComponent(UShapeComponent* ActorComp)
@@ -110,25 +106,10 @@ void UMyPhysicsMovement::SetAdditionalForce(FVector NewForce)
 	AdditionalForce = NewForce;
 }
 
-void UMyPhysicsMovement::SetInputForce(FVector NewForce)
-{
-	InputForce = NewForce;
-}
-
 void UMyPhysicsMovement::SetInstantForce(FVector NewForce, double Time)
 {
 	// 힘을 즉시 적용
-	UE_LOG(LogTemp, Display, TEXT("SetInstantForce Before Velocity(%.2f, %.2f, %.2f)"), Velocity.X, Velocity.Y, Velocity.Z);
 	Velocity += (NewForce / Mass) * Time;
-	UE_LOG(LogTemp, Display, TEXT("SetInstantForce After Velocity(%.2f, %.2f, %.2f)"), Velocity.X, Velocity.Y, Velocity.Z);
-	// 힘을 일정 시간동안 적용
-	//InstantForce += NewForce;
-	//FTimerHandle TempHandle;
-	//GetOwner()->GetWorldTimerManager().SetTimer(
-	//	TempHandle, 
-	//	[this, NewForce](){ InstantForce -= NewForce; },
-	//	Time, 
-	//	false);
 }
 
 bool UMyPhysicsMovement::IsFalling() const
