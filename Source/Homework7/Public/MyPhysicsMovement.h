@@ -31,6 +31,13 @@ public:
 	void SetAdditionalForce(FVector NewForce);
 
 	/// <summary>
+	/// 짧은 시간 힘을 가한다.
+	/// </summary>
+	/// <param name="NewForce">외부 힘</param>
+	UFUNCTION(BlueprintCallable)
+	void SetInstantForce(FVector NewForce, double Time);
+
+	/// <summary>
 	/// 물체가 중력의 영향을 받아 아래로 떨어지는 중인가?
 	/// </summary>
 	/// <returns>공중에 떠 있으며, 바닥으로 떨어지는 중이면 True</returns>
@@ -46,6 +53,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void CalculateForce(float DeltaTime);
 
 	TObjectPtr<UShapeComponent> ActorCollisionComp;
 

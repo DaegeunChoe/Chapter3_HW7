@@ -42,11 +42,11 @@ void UMyPhysicsMovement::BeginPlay()
 	}
 }
 
-void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UMyPhysicsMovement::CalculateForce(float DeltaTime)
 {
 	// 기본 힘
 	NetForce = AdditionalForce + GetGravityForce();
-	
+
 	// 다른 물체에 의한 항력
 	bool bIsHit = false;
 	bIsLanding = false;
@@ -71,6 +71,11 @@ void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		TotalDragForce += GetFrictionForce(NormalForce);
 	}
 	NetForce += TotalDragForce;
+}
+
+void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	CalculateForce(DeltaTime);
 
 	Acceleration = NetForce / Mass;
 	if (Acceleration.Length() < AccelerationThreshold)
@@ -99,6 +104,12 @@ void UMyPhysicsMovement::SetActorCollisionComponent(UShapeComponent* ActorComp)
 void UMyPhysicsMovement::SetAdditionalForce(FVector NewForce)
 {
 	AdditionalForce = NewForce;
+}
+
+void UMyPhysicsMovement::SetInstantForce(FVector NewForce, double Time)
+{
+	// 힘을 즉시 적용
+	Velocity += (NewForce / Mass) * Time;
 }
 
 bool UMyPhysicsMovement::IsFalling() const
@@ -192,8 +203,15 @@ FVector UMyPhysicsMovement::GetFrictionForce(FVector NormalForce) const
 FVector UMyPhysicsMovement::CollisionCounter(FVector Normal, FVector Input) const
 {
 	// 충돌에 의한 벡터 값 상쇄하기
-	FVector C0 = FVector::CrossProduct(Input, Normal);
-	FVector C1 = FVector::CrossProduct(Normal, C0);
-	C1.Normalize();
-	return C1 * Input.Dot(C1);
+	if (Normal.Dot(Input) < 0)
+	{
+		FVector C0 = FVector::CrossProduct(Input, Normal);
+		FVector C1 = FVector::CrossProduct(Normal, C0);
+		C1.Normalize();
+		return C1 * Input.Dot(C1);
+	}
+	else
+	{
+		return Input;
+	}
 }
