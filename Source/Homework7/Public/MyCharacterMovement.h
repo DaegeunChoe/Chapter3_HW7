@@ -12,6 +12,7 @@ class HOMEWORK7_API UMyCharacterMovement : public UMyPhysicsMovement
 public:
 	UMyCharacterMovement();
 	virtual void PostProcess() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
 	void Jump();
@@ -44,6 +45,8 @@ public:
 	int32 MaxJumpCount;
 
 protected:
+
+	void OnLanded();
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 RemainJumpCount;

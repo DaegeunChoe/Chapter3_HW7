@@ -14,7 +14,7 @@ UMyPhysicsMovement::UMyPhysicsMovement()
 	Mass = 1;
 
 	AdditionalForce = FVector::ZeroVector;
-	InstantForce = FVector::ZeroVector;
+	InputForce = FVector::ZeroVector;
 	
 	AirDragCoefficient = 0.7;
 	AirDensity = 1.225;
@@ -47,7 +47,7 @@ void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	UE_LOG(LogTemp, Display, TEXT("Velocity Before(%.2f, %.2f, %.2f)"), Velocity.X, Velocity.Y, Velocity.Z);
 	// 기본 힘
-	NetForce = InstantForce + AdditionalForce + GetGravityForce();
+	NetForce = InputForce + AdditionalForce + GetGravityForce();
 	
 	// 다른 물체에 의한 항력
 	bool bIsHit = false;
@@ -108,6 +108,11 @@ void UMyPhysicsMovement::SetActorCollisionComponent(UShapeComponent* ActorComp)
 void UMyPhysicsMovement::SetAdditionalForce(FVector NewForce)
 {
 	AdditionalForce = NewForce;
+}
+
+void UMyPhysicsMovement::SetInputForce(FVector NewForce)
+{
+	InputForce = NewForce;
 }
 
 void UMyPhysicsMovement::SetInstantForce(FVector NewForce, double Time)
