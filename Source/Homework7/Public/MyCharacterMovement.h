@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Move(FVector Direction);
 
+	UFUNCTION(BlueprintCallable)
+	void Stop();
+
 	/// <summary>
 	/// 점프 가속도
 	/// </summary>

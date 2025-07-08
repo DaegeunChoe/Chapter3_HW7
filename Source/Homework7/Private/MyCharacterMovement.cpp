@@ -50,6 +50,11 @@ void UMyCharacterMovement::Move(FVector Direction)
 	SetInputForce(Direction * MoveAcceleration);
 }
 
+void UMyCharacterMovement::Stop()
+{
+	SetInputForce(FVector::ZeroVector);
+}
+
 void UMyCharacterMovement::OnLanded()
 {
 	RemainJumpCount = MaxJumpCount;

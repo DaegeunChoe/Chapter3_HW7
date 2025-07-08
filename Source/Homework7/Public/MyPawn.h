@@ -10,6 +10,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UMyCharacterMovement;
 
+struct FInputActionValue;
+
 UCLASS()
 class HOMEWORK7_API AMyPawn : public APawn
 {
@@ -19,6 +21,18 @@ public:
 	AMyPawn();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION()
+	void Move(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void Stop(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void Look(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void Jump(const FInputActionValue& Value);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCapsuleComponent> Collision;
