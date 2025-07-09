@@ -25,16 +25,50 @@ AMyPawn::AMyPawn()
 
 	MyMovement = CreateDefaultSubobject<UMyCharacterMovement>(TEXT("MyMovement"));
 	MyMovement->SetActorCollisionComponent(Collision);
+
+	bRotateCameraOnly = false;
+	DestYaw = DestPitch = 0;
+	SavedCameraRotator = FRotator::ZeroRotator;
+	bIsEaseTransition = false;
+	CameraTransitionAlpha = 0.5;
+
+	RunSpeed = 450;
+	SprintSpeed = RunSpeed * 1.65;
+	MyMovement->MaxMoveSpeed = RunSpeed;
+
+	CameraZoomSpeed = 20;
+	CameraMaxDistance = 600;
+	CameraMinDistance = 200;
+	CameraDistance = (CameraMaxDistance + CameraMinDistance) / 2.0;
+	SpringArm->TargetArmLength = CameraDistance;
 }
 
 void AMyPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	DestYaw = SpringArm->GetComponentRotation().Yaw;
+	DestPitch = SpringArm->GetComponentRotation().Pitch;
 }
 
 void AMyPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsEaseTransition)
+	{
+		FRotator A = SpringArm->GetRelativeRotation();
+		FRotator B = FRotator(DestPitch, DestYaw, 0);
+		FRotator Interp = A * (1 - CameraTransitionAlpha) + B * CameraTransitionAlpha;
+		if ((FMath::Abs(A.Pitch - B.Pitch) + FMath::Abs(A.Yaw - B.Yaw)) <= 5)
+		{
+			SpringArm->SetRelativeRotation(B);
+			bIsEaseTransition = false;
+		}
+		else
+		{
+			SpringArm->SetRelativeRotation(Interp);
+		}
+	}
 }
 
 void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -57,6 +91,18 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 			if (PC->LookAction)
 			{
 				EnhancedInput->BindAction(PC->LookAction, ETriggerEvent::Triggered, this, &AMyPawn::Look);
+			}
+			if (PC->SprintAction)
+			{
+				EnhancedInput->BindAction(PC->SprintAction, ETriggerEvent::Triggered, this, &AMyPawn::ToggleSprint);
+			}
+			if (PC->CameraToggleAction)
+			{
+				EnhancedInput->BindAction(PC->CameraToggleAction, ETriggerEvent::Triggered, this, &AMyPawn::ToggleCamera);
+			}
+			if (PC->CameraZoomAction)
+			{
+				EnhancedInput->BindAction(PC->CameraZoomAction, ETriggerEvent::Triggered, this, &AMyPawn::ZoomCamera);
 			}
 		}
 	}
@@ -84,11 +130,26 @@ void AMyPawn::Stop(const FInputActionValue& Value)
 void AMyPawn::Look(const FInputActionValue& Value)
 {
 	FVector2D LookInput = Value.Get<FVector2D>();
-	AddActorLocalRotation(FRotator(0, LookInput.X, 0));
-
-	if (SpringArm)
+	if (bRotateCameraOnly)
 	{
-		SpringArm->AddLocalRotation(FRotator(LookInput.Y, 0, 0));
+		if (SpringArm)
+		{
+			DestYaw += LookInput.X;
+			DestPitch += LookInput.Y;
+		}
+	}
+	else
+	{
+		AddActorLocalRotation(FRotator(0, LookInput.X, 0));
+		if (SpringArm)
+		{
+			DestPitch += LookInput.Y;
+		}
+	}
+
+	if (!bIsEaseTransition)
+	{
+		SpringArm->SetRelativeRotation(FRotator(DestPitch, DestYaw, 0));
 	}
 }
 
@@ -100,3 +161,49 @@ void AMyPawn::Jump(const FInputActionValue& Value)
 	}
 }
 
+void AMyPawn::ToggleSprint(const FInputActionValue& Value)
+{
+	if (MyMovement)
+	{
+		if (Value.Get<bool>())
+		{
+			MyMovement->MaxMoveSpeed = SprintSpeed;
+		}
+		else
+		{
+			MyMovement->MaxMoveSpeed = RunSpeed;
+		}
+	}
+}
+
+void AMyPawn::ToggleCamera(const FInputActionValue& Value)
+{
+	if (Value.Get<bool>())
+	{
+		bRotateCameraOnly = true;
+		if (SpringArm)
+		{
+			SavedCameraRotator = SpringArm->GetRelativeRotation();
+		}
+	}
+	else
+	{
+		bRotateCameraOnly = false;
+		bIsEaseTransition = true;
+		DestYaw = SavedCameraRotator.Yaw;
+		DestPitch = SavedCameraRotator.Pitch;
+		if (TransitionTimer.IsValid())
+		{
+			GetWorldTimerManager().ClearTimer(TransitionTimer);
+		}
+		GetWorldTimerManager().SetTimer(TransitionTimer, [this]() {bIsEaseTransition = false;}, 1, false);
+	}
+}
+
+void AMyPawn::ZoomCamera(const FInputActionValue& Value)
+{
+	float Single = Value.Get<float>();
+	CameraDistance += Single * CameraZoomSpeed;
+	CameraDistance = FMath::Clamp(CameraDistance, CameraMinDistance, CameraMaxDistance);
+	SpringArm->TargetArmLength = CameraDistance;
+}

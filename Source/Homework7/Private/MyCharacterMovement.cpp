@@ -13,18 +13,19 @@ UMyCharacterMovement::UMyCharacterMovement()
 	AirControl = 0.5;
 }
 
-void UMyCharacterMovement::CalculateForce(float DeltaTime)
+FVector UMyCharacterMovement::CalculateAdditionalForce() const
 {
-	// 기본 힘 계산
-	Super::CalculateForce(DeltaTime);
+	FVector NewForce = FVector::ZeroVector;
+	NewForce += Super::CalculateAdditionalForce();
 
 	// 최고 속도보다 느릴 경우, 입력에 의해 이동할 수 있음
 	double SpeedXY = FMath::Sqrt(Velocity.X * Velocity.X + Velocity.Y * Velocity.Y);
 	if (SpeedXY <= MaxMoveSpeed && !FMath::IsNearlyZero(InputForce.Length()))
 	{
 		// 입력에 의한 힘 추가 계산
-		NetForce += InputForce * (IsLanded() ? 1.0 : AirControl);
+		NewForce += InputForce * (IsLanded() ? 1.0 : AirControl);
 	}
+	return NewForce;
 }
 
 void UMyCharacterMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

@@ -22,17 +22,26 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Move(const FInputActionValue& Value);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Stop(const FInputActionValue& Value);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Look(const FInputActionValue& Value);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void Jump(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleSprint(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleCamera(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void ZoomCamera(const FInputActionValue& Value);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCapsuleComponent> Collision;
@@ -49,6 +58,34 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UMyCharacterMovement> MyMovement;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double RunSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	double SprintSpeed;
+
 protected:
 	virtual void BeginPlay() override;
+
+private:
+	// 카메라 회전 및 확대 제어 변수
+	bool bRotateCameraOnly;
+	FRotator SavedCameraRotator;
+	double DestYaw;
+	double DestPitch;
+	bool bIsEaseTransition;
+	FTimerHandle TransitionTimer;
+	double CameraDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraTransitionAlpha;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraMaxDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraMinDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraZoomSpeed;
 };

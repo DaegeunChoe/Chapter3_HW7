@@ -53,7 +53,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void CalculateForce(float DeltaTime);
+	void CalculateForce(float DeltaTime);
+	virtual FVector CalculateAdditionalForce() const;
 
 	TObjectPtr<UShapeComponent> ActorCollisionComp;
 
