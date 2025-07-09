@@ -130,7 +130,7 @@ void UMyPhysicsMovement::SetInstantForce(FVector NewForce, double Time)
 
 bool UMyPhysicsMovement::IsFalling() const
 {
-	return !bIsLanding && Acceleration.Z > 0;
+	return !bIsLanding && Acceleration.Z < 0;
 }
 
 bool UMyPhysicsMovement::IsLanded() const
@@ -180,7 +180,7 @@ FVector UMyPhysicsMovement::GetNormalForce(float DeltaTime, FVector TargetForce,
 			Actor->GetActorLocation(),
 			Actor->GetActorLocation() + TempDisplacement,
 			ActorCollisionComp->GetComponentQuat(),
-			ECollisionChannel::ECC_Visibility,
+			ECollisionChannel::ECC_Camera,
 			ActorCollisionComp->GetCollisionShape(),
 			Params);
 
@@ -247,7 +247,7 @@ FVector UMyPhysicsMovement::ResolveOverlappingCollision()
 			Actor->GetActorLocation(),
 			Actor->GetActorLocation(),
 			ActorCollisionComp->GetComponentQuat(),
-			ECollisionChannel::ECC_Visibility,
+			ECollisionChannel::ECC_Camera,
 			ActorCollisionComp->GetCollisionShape(),
 			Params);
 
