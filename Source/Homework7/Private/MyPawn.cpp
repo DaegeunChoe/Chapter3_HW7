@@ -32,8 +32,8 @@ AMyPawn::AMyPawn()
 	bIsEaseTransition = false;
 	CameraTransitionAlpha = 0.5;
 
-	RunSpeed = 450;
-	SprintSpeed = RunSpeed * 1.65;
+	RunSpeed = 350;
+	SprintSpeed = RunSpeed * 1.75;
 	MyMovement->MaxMoveSpeed = RunSpeed;
 
 	CameraZoomSpeed = 20;
