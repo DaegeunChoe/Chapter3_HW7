@@ -53,7 +53,7 @@ public:
 	int32 MaxJumpCount;
 
 protected:
-	virtual void CalculateForce(float DeltaTime) override;
+	virtual FVector CalculateAdditionalForce() const override;
 	void OnLanded();
 
 	UPROPERTY(BlueprintReadOnly)

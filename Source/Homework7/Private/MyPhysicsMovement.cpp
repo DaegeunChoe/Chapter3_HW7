@@ -44,8 +44,12 @@ void UMyPhysicsMovement::BeginPlay()
 
 void UMyPhysicsMovement::CalculateForce(float DeltaTime)
 {
-	// 기본 힘
-	NetForce = AdditionalForce + GetGravityForce();
+	// 중력
+	NetForce = FVector::ZeroVector;
+	NetForce += GetGravityForce();
+
+	// 외력
+	NetForce += CalculateAdditionalForce();
 
 	// 다른 물체에 의한 항력
 	bool bIsHit = false;
@@ -71,6 +75,11 @@ void UMyPhysicsMovement::CalculateForce(float DeltaTime)
 		TotalDragForce += GetFrictionForce(NormalForce);
 	}
 	NetForce += TotalDragForce;
+}
+
+FVector UMyPhysicsMovement::CalculateAdditionalForce() const
+{
+	return AdditionalForce;
 }
 
 void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
