@@ -41,14 +41,14 @@ public:
 	/// 물체가 중력의 영향을 받아 아래로 떨어지는 중인가?
 	/// </summary>
 	/// <returns>공중에 떠 있으며, 바닥으로 떨어지는 중이면 True</returns>
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	bool IsFalling() const;
 
 	/// <summary>
 	/// 물체가 단단한 바닥 위에 있는가?
 	/// </summary>
 	/// <returns>바닥에 발이 닿아 있으면 True</returns>
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	bool IsLanded() const;
 
 protected:
