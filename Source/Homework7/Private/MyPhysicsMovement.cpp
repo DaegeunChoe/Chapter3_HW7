@@ -24,7 +24,7 @@ UMyPhysicsMovement::UMyPhysicsMovement()
 	KineticFrictionCoefficient = 0.4;
 
 	AccelerationThreshold = 1.0;
-	VelocityThreshold = 1.0;
+	VelocityXYThreshold = 1.0;
 
 	bIsLanding = true;
 }
@@ -93,15 +93,22 @@ void UMyPhysicsMovement::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	}
 
 	Velocity += Acceleration * DeltaTime;
-	if (Velocity.Length() < VelocityThreshold)
+	if (FVector(Velocity.X, Velocity.Y, 0).Length() < VelocityXYThreshold)
 	{
-		Velocity *= 0;
+		Velocity.X = 0;
+		Velocity.Y = 0;
 	}
 
 	FVector Displacement = Velocity * DeltaTime;
 	if (AActor* Actor = GetOwner())
 	{
 		Actor->AddActorWorldOffset(Displacement);
+	}
+
+	FVector OverlapAdjust = ResolveOverlappingCollision();;
+	if (AActor* Actor = GetOwner())
+	{
+		Actor->AddActorWorldOffset(OverlapAdjust);
 	}
 }
 
@@ -223,4 +230,36 @@ FVector UMyPhysicsMovement::CollisionCounter(FVector Normal, FVector Input) cons
 	{
 		return Input;
 	}
+}
+
+FVector UMyPhysicsMovement::ResolveOverlappingCollision()
+{
+	UWorld* World = GetWorld();
+	AActor* Actor = GetOwner();
+	if (IsValid(World) && IsValid(Actor) && ActorCollisionComp)
+	{
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(Actor);
+
+		TArray<FHitResult> SweepResults;
+		World->SweepMultiByChannel(
+			SweepResults,
+			Actor->GetActorLocation(),
+			Actor->GetActorLocation(),
+			ActorCollisionComp->GetComponentQuat(),
+			ECollisionChannel::ECC_Visibility,
+			ActorCollisionComp->GetCollisionShape(),
+			Params);
+
+		FVector InversePenetration = FVector::ZeroVector;
+		for (FHitResult& HitResult : SweepResults)
+		{
+			if (HitResult.GetActor())
+			{
+				InversePenetration += HitResult.PenetrationDepth * HitResult.ImpactNormal;
+			}
+		}
+		return InversePenetration;
+	}
+	return FVector::ZeroVector;
 }

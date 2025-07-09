@@ -119,16 +119,16 @@ protected:
 	double KineticFrictionCoefficient;
 
 	/// <summary>
-	/// 가속도가 이 값보다 작으면 적용하지 않음
+	/// 총 가속도가 이 값보다 작으면 적용하지 않음
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics|Attributes")
 	double AccelerationThreshold;
 
 	/// <summary>
-	/// 속도가 이 값보다 작으면 적용하지 않음
+	/// XY 속도가 이 값보다 작으면 적용하지 않음
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics|Attributes")
-	double VelocityThreshold;
+	double VelocityXYThreshold;
 
 
 private:
@@ -137,6 +137,9 @@ private:
 	FVector GetNormalForce(float DeltaTime, FVector TargetForce, bool& bIsHit) const;
 	FVector GetFrictionForce(FVector NormalForce) const;
 	FVector CollisionCounter(FVector Normal, FVector Input) const;
+
+	// 충돌 처리
+	FVector ResolveOverlappingCollision();
 
 	bool bIsLanding;
 };
