@@ -40,6 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ToggleCamera(const FInputActionValue& Value);
 
+	UFUNCTION(BlueprintCallable)
+	void ZoomCamera(const FInputActionValue& Value);
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UCapsuleComponent> Collision;
 
@@ -65,14 +68,24 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	// 카메라 회전 제어 변수
+	// 카메라 회전 및 확대 제어 변수
 	bool bRotateCameraOnly;
 	FRotator SavedCameraRotator;
 	double DestYaw;
 	double DestPitch;
 	bool bIsEaseTransition;
 	FTimerHandle TransitionTimer;
+	double CameraDistance;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	double CameraTransitionAlpha;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraMaxDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraMinDistance;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	double CameraZoomSpeed;
 };

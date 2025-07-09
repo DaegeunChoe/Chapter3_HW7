@@ -35,6 +35,12 @@ AMyPawn::AMyPawn()
 	RunSpeed = 450;
 	SprintSpeed = RunSpeed * 1.65;
 	MyMovement->MaxMoveSpeed = RunSpeed;
+
+	CameraZoomSpeed = 20;
+	CameraMaxDistance = 600;
+	CameraMinDistance = 200;
+	CameraDistance = (CameraMaxDistance + CameraMinDistance) / 2.0;
+	SpringArm->TargetArmLength = CameraDistance;
 }
 
 void AMyPawn::BeginPlay()
@@ -93,6 +99,10 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 			if (PC->CameraToggleAction)
 			{
 				EnhancedInput->BindAction(PC->CameraToggleAction, ETriggerEvent::Triggered, this, &AMyPawn::ToggleCamera);
+			}
+			if (PC->CameraZoomAction)
+			{
+				EnhancedInput->BindAction(PC->CameraZoomAction, ETriggerEvent::Triggered, this, &AMyPawn::ZoomCamera);
 			}
 		}
 	}
@@ -188,4 +198,12 @@ void AMyPawn::ToggleCamera(const FInputActionValue& Value)
 		}
 		GetWorldTimerManager().SetTimer(TransitionTimer, [this]() {bIsEaseTransition = false;}, 1, false);
 	}
+}
+
+void AMyPawn::ZoomCamera(const FInputActionValue& Value)
+{
+	float Single = Value.Get<float>();
+	CameraDistance += Single * CameraZoomSpeed;
+	CameraDistance = FMath::Clamp(CameraDistance, CameraMinDistance, CameraMaxDistance);
+	SpringArm->TargetArmLength = CameraDistance;
 }
