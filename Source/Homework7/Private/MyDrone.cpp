@@ -66,8 +66,6 @@ void AMyDrone::Rotate(const FInputActionValue& Value)
 		if (MyMovement)
 		{
 			FVector LookInput = Value.Get<FVector>();
-			GEngine->AddOnScreenDebugMessage(-1, 0.2, FColor::Magenta, 
-				FString::Printf(TEXT("(%.2f, %.2f, %.2f)"), LookInput.X, LookInput.Y, LookInput.Z));
 			AddActorLocalRotation(FRotator(0, LookInput.X, 0));
 			AddActorLocalRotation(FRotator(LookInput.Y, 0, 0));
 			AddActorLocalRotation(FRotator(0, 0, LookInput.Z));
