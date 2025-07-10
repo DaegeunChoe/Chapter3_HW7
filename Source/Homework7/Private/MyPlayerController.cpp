@@ -7,6 +7,9 @@ AMyPlayerController::AMyPlayerController()
 	MoveAction = nullptr;
 	LookAction = nullptr;
 	JumpAction = nullptr;
+	SprintAction = nullptr;
+	CameraZoomAction = nullptr;
+	CameraToggleAction = nullptr;
 }
 
 void AMyPlayerController::BeginPlay()

@@ -21,7 +21,7 @@ AMyPawn::AMyPawn()
 	SpringArm->SetupAttachment(Collision);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(SpringArm);
+	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	MyMovement = CreateDefaultSubobject<UMyCharacterMovement>(TEXT("MyMovement"));
 	MyMovement->SetActorCollisionComponent(Collision);
